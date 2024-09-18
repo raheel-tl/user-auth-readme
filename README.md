@@ -7,7 +7,7 @@
 
 This file outlines the complete user authentication flow, focusing on the following APIs: user login, token generation, token refresh, and email verification via OTP. It also demonstrates the two-factor authentication (2FA) process, if enabled, and includes configurations for the forgot password API.
 
-## Register API Flow
+## Register API Flow 🚀
 
 To register new user we have API with below context.
 
