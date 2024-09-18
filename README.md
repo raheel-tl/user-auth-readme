@@ -51,8 +51,8 @@ __Response status code: 400__
   "message": "Email already taken"
 }
 ```
-__Note__: This message can be change accordingly In case of user already
-exists with provided `email`, `username`, or `phone`.
+__Note__: This message can be change accordingly In case of validation
+error i.e `username already taken, try another`, `phone already taken`.
 
 
 ## Login API Flow 🚀
