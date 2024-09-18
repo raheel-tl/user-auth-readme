@@ -22,7 +22,7 @@ __Payload:__
   "password: "examplepassword",
   "firstName": "John",
   "lastName": "Smith",
-  "DateOfBirth": "06-05-2002",
+  "dateOfBirth": "06-05-2002",
   "phone": "00000000000"
 }
 ```
@@ -36,7 +36,7 @@ __Success User Registration__
 __Response status code: 201__
 ```json
 {
-  "message": "User has been created"
+  "message": "Register successful and verification code has been sent to your email"
 }
 ```
 
