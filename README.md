@@ -114,6 +114,7 @@ __Payload:__
 ```json
 {
   "totp": 123456,
+  "email": "example@gmail.com"
 }
 ```
 
