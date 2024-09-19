@@ -36,7 +36,7 @@ __Success User Registration__
 __Response status code: 201__
 ```json
 {
-  "message": "Register successful and verification code has been sent to your email"
+  "message": "Registration successful! A verification code has been sent to your email."
 }
 ```
 
@@ -150,45 +150,12 @@ flow of 2fA is described at end of document.
 
 To verify the email we have the below context.
 
-Endpoint: `POST /api/v1/auth/send_code/`
-
-__Payload:__
-```
-{
-  "email": "john@gmail.com",
-}
-```
-
-__API Response__
-
-This API can have different responses based on the payload provided to it.
-
-__Success__
-
-__Response status code: 200__
-```json
-{
-  "message": "A 6 digit code has been sent to your email"
-}
-```
-
-__validation Error__
-
-__Response status code: 400__
-```json
-{
-  "message": "Incorrect email"
-}
-```
-
-__Note__: In case of validation, the response message can be changed i.e. `Email is already verified, please login`.
-
-## Verify code
 Endpoint: `POST /api/v1/auth/verify_code/`
 
 ```json
 {
-  "code": 123456
+  "code": 123456,
+  "email": "example@gmail.com"
 }
 ```
 
@@ -197,7 +164,7 @@ __Success__
 __Response status code: 200__
 ```json
 {
-  "message": "Congratulations! your email is verified."
+  "message": "Congratulations! Your email has been verified. Please log in to continue."
 }
 ```
 
@@ -206,7 +173,7 @@ __Validation Error__
 __Response status code: 400__
 ```json
 {
-  "message": "Code expired"
+  "message": "Code expired, please try again."
 }
 ```
 
@@ -265,7 +232,7 @@ __Success__
 __Response status code: 200__
 ```json
 {
-  "message": "You password has been reset successfully!"
+  "message": "You password has been reset successfully, please login to continue."
 }
 ```
 
@@ -285,15 +252,7 @@ __Note__: In case of validation, the response message can be changed i.e. `Code 
 
 To enable 2FA authentication, the following flow is available.
 
-Endpoint: `POST /api/v1/auth/enable-2fa/`
-
-__Payload:__
-```
-{
-  "email": "john@gmail.com",
-  "password": "examplepassword",
-}
-```
+Endpoint: `GET /api/v1/auth/enable-2fa/`
 
 __API Response__
 
@@ -314,12 +273,9 @@ __validation Error__
 __Response status code: 400__
 ```json
 {
-  "message": "Incorrect Password"
+  "message": "Verify email before enabling 2FA"
 }
 ```
-
-__Note__: The API can have different responses in case of validation. i.e. `Verify email before enabling 2FA`, 
-`Incorrect account credentials`.
 
 ## Verify 2FA
 
@@ -328,7 +284,8 @@ Endpoint: `POST api/v1/auth/verify-2fa/`
 __Payload:__
 ```
 {
-  "totp": 123456
+  "totp": 123456,
+  "email": "example@gmail.com"
 }
 ```
 
