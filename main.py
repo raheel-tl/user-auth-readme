@@ -90,12 +90,15 @@ async def login_2fa(
                 "refresh_token": create_refresh_token(user.email),
             }
         else:
-            return {
-                "message": "Invalid totp, please try again!"
-            }
-    return {
-        "message": "Please enable 2FA first!"
-    }
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid totp, please try again!"
+            )
+
+    raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Frist enable 2FA"
+            )
 
 
 @app.post('/api/v1/auth/refresh_token/')
@@ -165,8 +168,6 @@ async def verify_2fa(
                 "message": "2FA is enabled now, please login."
             }
         else:
-            return {
-                "message": "Invalid totp, please try again!"
-            }
+            raise HTTPException(status_code=400, detail="Invalid totp")
     else:
         raise HTTPException(status_code=400, detail="Generate totp secret first")
