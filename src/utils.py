@@ -1,6 +1,5 @@
 from passlib.context import CryptContext
 
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Union, Any, Annotated
 from jose import jwt
@@ -9,7 +8,6 @@ from configurations.app_config import settings
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 import pyotp
-import qrcode
 
 from src.models.user_models import User
 
@@ -82,7 +80,8 @@ async def get_current_user(
         token_data = TokenData(email=email)
     except jwt.JWTError:
         raise credentials_exception
-    user = user = db.query(User).filter(token_data.email == email).first()
+    print("email before filtering the user: ", email)
+    user = db.query(User).filter(token_data.email == email).first()
     if user is None:
         raise credentials_exception
     return user
@@ -94,7 +93,7 @@ def generate_qr_code(totp_secret):
     return provisioning_uri
 
 def verify_secret(user_sec, totp_code):
-    totp = pyotp.TOTP(user_sec)
+    totp = pyotp.TOTP(user_sec.strip())
     generated_code = totp.now()
     print("generated code: ", generated_code)
     if totp.verify(totp_code.strip(), valid_window=1):

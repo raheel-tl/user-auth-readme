@@ -2,7 +2,7 @@ import pyotp
 
 from fastapi import FastAPI,  Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from src.dto.register import Register, Login, TokenSchema, RefreshToken, TOTP, Login2FA, Enable2FAResponse
+from src.dto.register import Register, Login, TokenSchema, RefreshToken, TOTP, Login2FA, Enable2FAResponse, RegisterResponse
 from configurations.app_config import settings
 
 from src.models.user_models import User
@@ -26,19 +26,38 @@ from src.utils import (
 app = FastAPI()
 
 
-@app.post('/api/v1/auth/register')
+@app.post('/api/v1/auth/register', response_model=RegisterResponse)
 async def register(
     data: Register,
     db: Session = Depends(settings.get_db)
-) -> Register:
+) -> RegisterResponse:
     """
     Create new User
     """
+    if db.query(User).filter(User.email == data.email).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email alreday exists."
+        )
+    if db.query(User).filter(User.username == data.username).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this username alreday exists."
+        )
     item = User(**data.model_dump())
     db.add(item)
     db.commit()
     db.refresh(item)
-    return item
+    response = RegisterResponse(
+        id=item.id,
+        username=item.username,
+        email=item.email,
+        first_name=item.first_name,
+        last_name=item.last_name,
+        phone=item.phone,
+        date_of_birth=item.date_of_birth
+    )
+    return response
 
 
 @app.post('/api/v1/auth/login', summary="Create access and refresh tokens for user", response_model=TokenSchema | Enable2FAResponse)
@@ -69,6 +88,7 @@ async def login(
         "refresh_token": create_refresh_token(user.email),
     }
 
+
 @app.post('/api/v1/auth/login-2fa/', summary="Login with 2FA", response_model=TokenSchema | Enable2FAResponse)
 async def login_2fa(
     data: Login2FA,
@@ -98,7 +118,7 @@ async def login_2fa(
     raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Frist enable 2FA"
-            )
+    )
 
 
 @app.post('/api/v1/auth/refresh_token/')
@@ -133,8 +153,14 @@ async def refresh_token(
     totp_secret = pyotp.random_base32()
     uri = generate_qr_code(totp_secret)
     user = db.query(User).filter(User.email == user.email).first()
-    user.totp_secret = totp_secret
-    db.commit()
+    if user:
+        user.totp_secret = totp_secret
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    else:
+        raise HTTPException(status_code=400, detail="User not found")
 
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(uri)
@@ -147,7 +173,7 @@ async def refresh_token(
     qr_image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
     return {
         "URI": uri,
-        "QR_Code": f"data:image/png;base64,{qr_image_base64}"
+        "QrCode": f"data:image/png;base64,{qr_image_base64}"
     }
 
 
@@ -163,7 +189,9 @@ async def verify_2fa(
         if verified:
             user = db.query(User).filter(User.email == user.email).first()
             user.two_factor_auth = True
+            db.add(user)
             db.commit()
+            db.refresh(user)
             return {
                 "message": "2FA is enabled now, please login."
             }

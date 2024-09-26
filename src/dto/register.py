@@ -1,10 +1,19 @@
 from pydantic import BaseModel, field_validator
-from datetime import date
+from datetime import date, datetime
 
 from src.utils import get_hashed_password
+from humps import camelize
 
+def to_camel(string):
+    return camelize(string)
 
-class Register(BaseModel):
+class CamelModel(BaseModel):
+    model_config = {
+        "alias_generator": to_camel,
+        "populate_by_name": True,
+    }
+
+class Register(CamelModel):
     username: str
     email: str
     password: str
@@ -32,24 +41,38 @@ class Register(BaseModel):
             raise ValueError('Password must be at least 6 characters long')
         return get_hashed_password(value)
 
-class Login(BaseModel):
+
+class Login(CamelModel):
     email: str
     password: str
 
-class Login2FA(BaseModel):
+class Login2FA(CamelModel):
     email: str
     totp: str
 
 
-class TokenSchema(BaseModel):
+class TokenSchema(CamelModel):
     access_token: str
     refresh_token: str
 
-class Enable2FAResponse(BaseModel):
+
+class Enable2FAResponse(CamelModel):
     message: str
 
-class RefreshToken(BaseModel):
+
+class RefreshToken(CamelModel):
     refresh_token: str
 
-class TOTP(BaseModel):
+
+class TOTP(CamelModel):
     totp: str
+
+
+class RegisterResponse(CamelModel):
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+    date_of_birth: datetime
+    phone: str
